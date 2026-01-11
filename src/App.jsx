@@ -1,13 +1,31 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [searchString, setSearchString] = useState("");
+  const [debounceQuery, setDebounceQuery] = useState("");
 
-  const handleChange = (event) => {
-    setQuery(event.target.value);
-    console.log("검색 쿼리:", event.target.value);
+  // const [searchString, setSearchString] = useState("");
+  const [throttleQuery, setThrottleQuery] = useState("");
+
+  //debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebounceQuery(query);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  //throttle
+  const lastTimeRef = useRef(0);
+  const handleThrottleChange = (e) => {
+    const now = Date.now();
+
+    if (now - lastTimeRef.current >= 100) {
+      lastTimeRef.current = now;
+      setThrottleQuery(e.target.value);
+      console.log("throttle:", e.target.value);
+    }
   };
 
   return (
@@ -22,18 +40,21 @@ function App() {
         <input
           type="text"
           placeholder="Debounce를 이용한 검색..."
-          onChange={handleChange}
+          onChange={(e) => {
+            setQuery(e.target.value);
+          }}
         />
+        <p>{debounceQuery}</p>
       </div>
       <div>
         <h2>Throttle</h2>
         <input
           type="text"
           placeholder="Throttle을 이용한 검색..."
-          onChange={handleChange}
+          onChange={handleThrottleChange}
         />
       </div>
-      <p>{searchString}</p>
+      <p>{throttleQuery}</p>
     </div>
   );
 }
